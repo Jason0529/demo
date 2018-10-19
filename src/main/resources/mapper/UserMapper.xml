@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- namespace : 命名空间 -->
+<mapper namespace="com.unicom.springboot.mapper.UserMapper">
+
+    <!-- 开启本mapper namespace下的二级缓存 -->
+    <!-- <cache /> -->
+    
+    <!-- 定义resultMap 
+        把SELECT id u_id,username u_name FROM USER和User的属性做一个映射
+        type:是最终映射成的java对象类型，可以使用别名
+        id:resultMap的唯一标识
+    -->
+    <resultMap type="User" id="userResultMap">
+        <!-- id：表示查询结果中的唯一标识
+            column：查询出的列名
+            property：pojo类中的属性名
+         -->
+        <id column="u_id" property="id" />
+        <!-- 
+            result:对普通字段的映射定义
+         -->
+        <result column="u_name" property="username" />
+    </resultMap>
+    
+    
+    
+    
+    
+    
+    
+    <!-- resultType: 返回值类型 -->
+  <!-- <select id="listUser" resultType="com.mybatis.model.User">
+    select * from user
+  </select> -->
+  <select id="listUser" resultMap="userResultMap">
+    SELECT id u_id,username u_name FROM USER
+  </select>
+  
+  <!-- parameterType:参数类型 -->
+  <!-- #{id}: 相当于是 ？占位符 -->
+  <!-- 查询 -->
+  <select id="findById" parameterType="java.lang.Integer" resultType="User" 
+  useCache="true">
+    select * from user where id = #{value}
+  </select>
+  
+  <!-- 删除 -->
+  <delete id="deleteById" parameterType="int">
+    delete from user where id = #{id}
+  </delete>
+  
+  <!-- 删除 -->
+  <delete id="delete" parameterType="int">
+    delete from user where username like '%${value}%';
+  </delete>
+  
+  <!-- 新增 -->
+  <!-- 
+        flushCache: 默认是true 立即刷新，false：不会刷新,会读取旧数据，脏读
+   -->
+  <insert id="insertUser" parameterType="User" flushCache="true">
+    <!-- 
+                返回插入数据的主键，返回到user对象中
+        LAST_INSERT_ID()  获取自增主键
+        keyProperty：将查询到的主键值设置到parameterType指定对象的对应属性中
+        order: 执行顺序 相对于insert语句来说的执行顺序  after:在...之后  before:...之前
+        resultType: 指定 select LAST_INSERT_ID()的返回值类型
+     -->
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+        select LAST_INSERT_ID()
+    </selectKey>
+    insert into user(username,userpwd) values (#{username},#{userpwd});
+  </insert>
+  <!-- 更新 -->
+  <update id="updateUser" parameterType="User">
+    update User set username = #{username} where id = #{id}
+  </update>
+  
+  <!-- 
+    ${} 中只能用value
+    ${} 拼接sql 容易引起sql注入   
+   -->
+  <select id="findByName" parameterType="java.lang.String" resultType="User">
+   <!--  select * from user where username like '%${value}%'; -->
+    select * from user where username like CONCAT('%',#{username},'%');
+  </select>
+  
+  
+  
+</mapper>
